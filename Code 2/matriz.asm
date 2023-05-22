@@ -7,8 +7,11 @@ include macros.asm
 .data
     cabecerasF db "12345678$"
     cabecerasC db "ABCDEFGH$"
-    pregunta db "Escoge tu coordenada de destino$"
+    pregunta db "Escoge tu coordenada de origen$"
+    pregunta2 db "Escoge tu coordenada de destino$"
     error db "Error de coordenadas de origen$"
+    error2 db "Error de coordenadas de destino$"
+    mensajeTurnoBlanco db "Turno de blancos:$"
     ok db "Todo bien$"
     espacio db " $"
     individual db " $"
@@ -23,7 +26,8 @@ include macros.asm
     tablero db 64 dup(0), "$"
     pointerGeneral dw 0
     color db 0
-    bufferP1 db 50 dup("$"), "$"
+    bufferP1 db 3 dup("$"), "$"
+    bufferP2 db 3 dup("$"), "$"
 
     fila dw 0
     columna dw 0
@@ -40,6 +44,8 @@ include macros.asm
         ; mov bl, tablero[di]
 
         turnoBlanco:
+        imprimir mensajeTurnoBlanco, 15d
+        ImprimirEspacio al
         xor di, di
         xor si, si
         xor bx, bx
@@ -49,31 +55,9 @@ include macros.asm
         leerHastaEnter bufferP1
 
         mov ah, bufferP1[0]
-        mov bh, bufferP1[2]
+        mov ch, bufferP1[2]
 
-        ciclo:
-            cmp cabecerasF[di], ah
-            je asignar
-            inc di
-            cmp di, 8d
-            jmp ciclo
-
-        asignar:
-            mov fila, di
-
-        xor di, di
-        ciclo2:
-            cmp cabecerasC[di], bh
-            je asignar2
-            inc di
-            cmp di, 8d
-            jmp ciclo2
-
-        asignar2:
-            mov columna, di
-
-        obtenerIndice fila, columna
-        mov si, indice
+        asignarCoordenadasOrigen
 
         ; Imprimir16bits si
 
@@ -82,7 +66,38 @@ include macros.asm
         jmp errorCasillas
 
         seguirJugando:
+        ; imprimir ok, 15d
+        ImprimirEspacio al
+        imprimir pregunta2, 15d
+        ImprimirEspacio al
+        leerHastaEnter bufferP2
+        xor ax, ax
+        xor cx, cx
+        xor bx, bx
+        xor di, di
+
+        mov ah, bufferP2[0]
+        mov ch, bufferP2[2]
+
+        asignarCoordenadasDestino
+        cmp tablero[bx], 0d
+        je moverFicha
+        jmp errorDestino
+
+        moverFicha:
+        mov tablero[bx], 1d
+        mov tablero[si], 0d
         imprimir ok, 15d
+
+        ImprimirEspacio al
+        xor di, di
+        xor bx, bx
+        reImprimirMatriz
+
+        jmp fin
+
+        errorDestino:
+        imprimir error2, 15d
         jmp fin
 
         errorCasillas:

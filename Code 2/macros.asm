@@ -253,6 +253,7 @@ imprimirMatriz macro
     fin:
 endm
 
+
 obtenerIndice macro row, column
     ;posicion[i][j] en el arreglo = i * numero columnas + j
     mov ax, row
@@ -364,4 +365,157 @@ leerHastaEnter macro entrada
     fin:
         mov al, 24h ;Agregando un signo de dolar para eliminar el salto de linea
         mov entrada[bx], al
+endm
+
+asignarCoordenadasOrigen macro
+    ciclo:
+        cmp cabecerasF[di], ah
+        je asignar
+        inc di
+        cmp di, 8d
+        jmp ciclo
+
+    asignar:
+        mov fila, di
+
+    xor di, di
+    ciclo2:
+        cmp cabecerasC[di], ch
+        je asignar2
+        inc di
+        cmp di, 8d
+        jmp ciclo2
+
+    asignar2:
+        mov columna, di
+
+    obtenerIndice fila, columna
+    mov si, indice
+endm
+
+asignarCoordenadasDestino macro
+    cicloDestino:
+        cmp cabecerasF[di], ah
+        je asignarDestino
+        inc di
+        cmp di, 8d
+        jmp cicloDestino
+
+    asignarDestino:
+        mov fila, di
+
+    xor di, di
+    ciclo2Destino:
+        cmp cabecerasC[di], ch
+        je asignar2Destino
+        inc di
+        cmp di, 8d
+        jmp ciclo2Destino
+
+    asignar2Destino:
+        mov columna, di
+
+    obtenerIndice fila, columna
+    mov cx, indice
+endm
+
+reImprimirMatriz macro
+    local ciclo, ciclo2, ciclo3, ciclo4, reinicio, reinicio2, fin
+
+    imprimir espacio, 0d    ; color negro
+    imprimir espacio, 0d
+    xor si, si
+    ; Ciclo para imprimir las cabeceras de columnas de la matriz
+    ciclo:
+        ; Se mueve hacia una variable que simula un caracter, porque el macro imprimir
+        ; realiza la impresion hasta que encuentra el simbolo de final de cadena
+        mov bl, cabecerasC[si]
+        mov individual[0], bl
+        imprimir individual, 15d
+        imprimir espacio, 0d
+        imprimir espacio, 0d
+        imprimir espacio, 0d
+        inc si
+        cmp si, 8d
+        jnz ciclo
+
+        imprimir salto, 0d
+        xor si, si
+        mov iteradorJ, 0d
+        ciclo2: ; Ciclo que imprime las caberas de las filas
+            xor di, di
+            mov bl, cabecerasF[si]
+            mov individual[0], bl
+            imprimir individual, 15d
+            imprimir espacio, 0d
+
+            mov iteradorI, 0d
+            ciclo3: ;ciclo que imprime los valores de las filas
+                mov di, iteradorJ
+                verificarValor1 tablero[di]
+                inc iteradorJ
+                imprimir individual, color
+
+                inc iteradorI ;validacion para hacer linea divisioria
+                cmp iteradorI, 8d
+                jz reinicio
+
+                imprimir espacio, 0d
+                mov bl, lineas[0]
+                mov individual[0], bl
+                imprimir individual, 15d
+                imprimir espacio, 0d
+                jmp ciclo3
+
+            reinicio: ;ciclo que imprimie la linea divisoria entre filas
+                cmp si, 8d
+                jz reinicio2
+                mov iteradorI, 0d
+                imprimir salto, 0d
+                imprimir espacio, 0d
+                imprimir espacio, 0d
+                ciclo4:
+                    mov bl, lineas[1]
+                    mov individual[0], bl
+                    imprimir individual, 15d
+                    inc iteradorI
+                    cmp iteradorI, 32d
+                    jnz ciclo4
+
+            reinicio2:
+            imprimir salto, 0d
+            inc si
+            cmp si, 8d
+            jnz ciclo2
+
+    fin:
+endm
+
+verificarValor1 macro valor
+    local cero, uno, dos, tres, cuatro, fin
+
+    cmp valor, 0
+    jz cero
+
+    cmp valor, 1
+    jz uno
+
+    cmp valor, 2
+    jz dos
+
+    dos:
+        mov color, 14d
+        mov individual[0], "N"
+        jmp fin
+
+    uno:
+        mov color, 11d
+        mov individual[0], "B"
+        jmp fin
+
+    cero:
+        mov color, 0d
+        mov individual[0], " "
+
+    fin:
 endm
