@@ -369,14 +369,14 @@ endm
 
 asignarCoordenadasOrigen macro
     ciclo:
-        cmp cabecerasF[di], ah
+        cmp cabecerasF[di], cl
         je asignar
         inc di
         cmp di, 8d
         jmp ciclo
 
     asignar:
-        mov fila, di
+        mov fila1, di
 
     xor di, di
     ciclo2:
@@ -387,36 +387,37 @@ asignarCoordenadasOrigen macro
         jmp ciclo2
 
     asignar2:
-        mov columna, di
+        mov columna1, di
 
-    obtenerIndice fila, columna
+    obtenerIndice fila1, columna1
     mov si, indice
 endm
 
 asignarCoordenadasDestino macro
+    xor di, di
     cicloDestino:
-        cmp cabecerasF[di], ah
+        cmp cabecerasF[di], dl
         je asignarDestino
         inc di
         cmp di, 8d
         jmp cicloDestino
 
     asignarDestino:
-        mov fila, di
+        mov fila2, di
 
     xor di, di
     ciclo2Destino:
-        cmp cabecerasC[di], ch
+        cmp cabecerasC[di], dh
         je asignar2Destino
         inc di
         cmp di, 8d
         jmp ciclo2Destino
 
     asignar2Destino:
-        mov columna, di
+        mov columna2, di
 
-    obtenerIndice fila, columna
-    mov cx, indice
+    obtenerIndice fila2, columna2
+    mov bx, indice
 endm
 
 reImprimirMatriz macro

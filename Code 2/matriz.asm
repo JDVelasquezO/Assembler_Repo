@@ -7,10 +7,11 @@ include macros.asm
 .data
     cabecerasF db "12345678$"
     cabecerasC db "ABCDEFGH$"
-    pregunta db "Escoge tu coordenada de origen$"
-    pregunta2 db "Escoge tu coordenada de destino$"
+    pregunta db "Escoge tu coordenada$"
     error db "Error de coordenadas de origen$"
     error2 db "Error de coordenadas de destino$"
+    errorVertical db "Movimiento vertical prohibido$"
+    errorHorizontal db "Movimiento horizontal prohibido$"
     mensajeTurnoBlanco db "Turno de blancos:$"
     ok db "Todo bien$"
     espacio db " $"
@@ -26,11 +27,12 @@ include macros.asm
     tablero db 64 dup(0), "$"
     pointerGeneral dw 0
     color db 0
-    bufferP1 db 3 dup("$"), "$"
-    bufferP2 db 3 dup("$"), "$"
+    bufferP1 db 5 dup("$"), "$"
 
-    fila dw 0
-    columna dw 0
+    fila1 dw 0
+    columna1 dw 0
+    fila2 dw 0
+    columna2 dw 0
 
 .code
     main proc
@@ -50,41 +52,41 @@ include macros.asm
         xor si, si
         xor bx, bx
 
-        imprimir pregunta, 15d
+        imprimir pregunta, 15d  ; Pregunta coordenadas de origen
         ImprimirEspacio al
         leerHastaEnter bufferP1
 
-        mov ah, bufferP1[0]
-        mov ch, bufferP1[2]
+        xor cx, cx
+        xor dx, dx
+
+        mov cl, bufferP1[0]     ; Recibe coordenadas de origen y destino
+        mov ch, bufferP1[1]
+        mov dl, bufferP1[3]
+        mov dh, bufferP1[4]
+
+        ; Pregunta si las coordenadas son iguales
+        cmp ch, dh
+        je malMovimientoVertical
+
+        cmp cl, dl
+        je malMovimientoHorizontal
 
         asignarCoordenadasOrigen
-
-        ; Imprimir16bits si
-
         cmp tablero[si], 1d
         je seguirJugando
         jmp errorCasillas
 
         seguirJugando:
-        ; imprimir ok, 15d
-        ImprimirEspacio al
-        imprimir pregunta2, 15d
-        ImprimirEspacio al
-        leerHastaEnter bufferP2
-        xor ax, ax
-        xor cx, cx
-        xor bx, bx
-        xor di, di
-
-        mov ah, bufferP2[0]
-        mov ch, bufferP2[2]
-
         asignarCoordenadasDestino
+        ; Imprimir16bits bx
         cmp tablero[bx], 0d
         je moverFicha
         jmp errorDestino
 
         moverFicha:
+        xor bx, bx
+        xor di, di
+
         mov tablero[bx], 1d
         mov tablero[si], 0d
         imprimir ok, 15d
@@ -102,6 +104,14 @@ include macros.asm
 
         errorCasillas:
         imprimir error, 15d
+        jmp fin
+
+        malMovimientoVertical:
+        imprimir errorVertical, 15d
+        jmp fin
+
+        malMovimientoHorizontal:
+        imprimir errorHorizontal, 15d
 
         fin:
 
